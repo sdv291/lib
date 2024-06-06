@@ -1,4 +1,5 @@
 A common library that will make your Java application better
+
 Author: Dmitry Salanzhyi
 
 Simple example:
