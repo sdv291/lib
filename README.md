@@ -4,8 +4,6 @@ Author: Dmitry Salanzhyi
 
 Simple example:
 
-`
-
     Logger logger = Logger.getLogger("root");
     
     ProcessConfig config = ProcessConfig.newBuilder()
@@ -33,4 +31,3 @@ Simple example:
     INFO: pool-1-thread-3 - [80, 81, 82, 83, 84, 85, 86, 87, 88, 89]
     INFO: pool-1-thread-1 - [70, 71, 72, 73, 74, 75, 76, 77, 78, 79]
     INFO: pool-1-thread-2 - [90, 91, 92, 93, 94, 95, 96, 97, 98, 99]
-`
