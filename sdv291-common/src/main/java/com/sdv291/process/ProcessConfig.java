@@ -8,7 +8,6 @@ public class ProcessConfig {
 
   private final int maxPackSize;
   private final int maxWorkerCount;
-  private final boolean allowSuspendWorkers;
   private final long pollTimeoutMillis;
   private final int overloadThreshold;
   private final ExecutorService executorService;
@@ -16,7 +15,6 @@ public class ProcessConfig {
   private ProcessConfig(Builder builder) {
     this.maxPackSize = builder.maxPackSize;
     this.maxWorkerCount = builder.maxWorkerCount;
-    this.allowSuspendWorkers = builder.allowSuspendWorkers;
     this.pollTimeoutMillis = builder.pollTimeoutMillis;
     this.overloadThreshold = builder.overloadThreshold;
     this.executorService = builder.executorService;
@@ -28,10 +26,6 @@ public class ProcessConfig {
 
   public int getMaxWorkerCount() {
     return maxWorkerCount;
-  }
-
-  public boolean isAllowSuspendWorkers() {
-    return allowSuspendWorkers;
   }
 
   public long getPollTimeoutMillis() {
@@ -55,7 +49,6 @@ public class ProcessConfig {
     private int maxPackSize = AbstractProcess.MINIMUM_PACK_SIZE;
     private int maxWorkerCount = AbstractProcess.MINIMUM_WORKER_COUNT;
     private long pollTimeoutMillis = 1000L;
-    private boolean allowSuspendWorkers = false;
     private int overloadThreshold = AbstractProcess.MINIMUM_OVERLOAD_THRESHOLD;
     private ExecutorService executorService;
 
@@ -83,11 +76,6 @@ public class ProcessConfig {
         throw new IllegalArgumentException("The 'pollTimeoutMillis' value must be a positive or 0");
       }
       this.pollTimeoutMillis = pollTimeoutMillis;
-      return this;
-    }
-
-    public Builder setAllowSuspendWorkers(boolean allowSuspendWorkers) {
-      this.allowSuspendWorkers = allowSuspendWorkers;
       return this;
     }
 
