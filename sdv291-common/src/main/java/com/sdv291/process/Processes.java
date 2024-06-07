@@ -27,6 +27,7 @@ public class Processes {
    */
   public static <E> Process<E> newProcess(ProcessConfig config, Consumer<List<E>> consumer) {
     return new AbstractProcess<E>(config) {
+
       /**
        * {@inheritDoc}
        */

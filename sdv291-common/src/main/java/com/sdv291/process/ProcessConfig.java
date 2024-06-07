@@ -3,6 +3,7 @@ package com.sdv291.process;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class ProcessConfig {
 
@@ -48,7 +49,7 @@ public class ProcessConfig {
 
     private int maxPackSize = AbstractProcess.MINIMUM_PACK_SIZE;
     private int maxWorkerCount = AbstractProcess.MINIMUM_WORKER_COUNT;
-    private long pollTimeoutMillis = 1000L;
+    private long pollTimeoutMillis = TimeUnit.SECONDS.toMillis(1);
     private int overloadThreshold = AbstractProcess.MINIMUM_OVERLOAD_THRESHOLD;
     private ExecutorService executorService;
 
