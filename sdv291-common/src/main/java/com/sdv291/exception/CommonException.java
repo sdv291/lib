@@ -1,5 +1,6 @@
 package com.sdv291.exception;
 
+import com.sdv291.util.RegexUtils;
 import com.sdv291.util.StringUtils;
 
 import java.io.PrintWriter;
@@ -107,7 +108,7 @@ public class CommonException extends RuntimeException {
         if (pattern.contains("%s") && objects.length > 0) {
           message = String.format(pattern, objects);
         }
-        message = StringUtils.correctSpace(message);
+        message = RegexUtils.correctSpace(message);
         if (!StringUtils.isEmpty(message)) {
           switch (message.charAt(message.length() - 1)) {
             case '.':
@@ -130,6 +131,11 @@ public class CommonException extends RuntimeException {
     }
 
     public CommonException build() {
+      if (Objects.nonNull(cause) && !Objects.equals(ExceptionCode.DEFAULT, code)) {
+        if (cause instanceof InterruptedException) {
+          this.setCode(ExceptionCode.INTERRUPTED);
+        }
+      }
       return new CommonException(this);
     }
   }

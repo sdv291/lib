@@ -2,8 +2,10 @@ package com.sdv291.exception;
 
 public enum ExceptionCode {
   DEFAULT,
-  UNIMPLEMENTED,
-  UNSUPPORTED,
+  IGNORE,
   INTERNAL,
-  IGNORE
+  UNSUPPORTED,
+  UNIMPLEMENTED,
+  RETRY_REACHED,
+  INTERRUPTED
 }

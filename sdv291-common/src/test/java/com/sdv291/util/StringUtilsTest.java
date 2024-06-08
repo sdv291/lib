@@ -10,8 +10,6 @@ class StringUtilsTest {
   @Test
   void constants() {
     assertEquals("", StringUtils.EMPTY);
-    assertEquals(" ", StringUtils.SPACE);
-    assertEquals("  ", StringUtils.DOUBLE_SPACE);
   }
 
   @Test
@@ -26,13 +24,5 @@ class StringUtilsTest {
   void notEmpty() {
     assertTrue(StringUtils.notEmpty("null"));
     assertTrue(StringUtils.notEmpty(" . "));
-  }
-
-  @Test
-  void correctSpace() {
-    assertEquals("", StringUtils.correctSpace(" "));
-    assertEquals("", StringUtils.correctSpace("  "));
-    assertEquals(".", StringUtils.correctSpace(" . "));
-    assertEquals(".", StringUtils.correctSpace("  .  "));
   }
 }
