@@ -11,7 +11,10 @@
   <inceptionYear>2024</inceptionYear>
 
   <scm>
-    <connection>scm:svn:https://github.com/sdv291/lib/tags/sdv291-common-1.0.0</connection>
+    <connection>scm:git:${project.scm.url}</connection>
+    <developerConnection>scm:git:${project.scm.url}</developerConnection>
+    <url>https://github.com/sdv291/lib.git</url>
+    <tag>HEAD</tag>
   </scm>
 
   <build>
