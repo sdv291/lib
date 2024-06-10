@@ -3,9 +3,9 @@ package com.sdv291;
 /**
  * Bi pair instance.
  *
- * @param <L> {@inheritDoc}
+ * @param <L> the type of the left argument
  * @param <M> the type of the middle argument
- * @param <R> {@inheritDoc}
+ * @param <R> the type of the right argument
  */
 public class BiPair<L, M, R> extends Pair<L, R> {
 
