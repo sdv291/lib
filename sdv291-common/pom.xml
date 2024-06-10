@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.sdv291</groupId>
+  <artifactId>sdv291-common</artifactId>
+  <version>1.0.0</version>
+  <description>A library "sdv291-common" will make your Java application better!</description>
+  <packaging>pom</packaging>
+  <name>sdv291-common</name>
+  <inceptionYear>2024</inceptionYear>
+
+  <scm>
+    <connection>scm:svn:https://github.com/sdv291/lib/tags/sdv291-common-1.0.0</connection>
+  </scm>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.4.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+          <tokenAuth>true</tokenAuth>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>5.9.1</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>5.9.1</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <developers>
+    <developer>
+      <name>Dmitry Salanzhy</name>
+      <email>sdv291@gmail.com</email>
+      <timezone>Europe/Kiev</timezone>
+      <roles>
+        <role>BA</role>
+        <role>Tester</role>
+        <role>Support</role>
+        <role>Java developer</role>
+      </roles>
+    </developer>
+  </developers>
+</project>
