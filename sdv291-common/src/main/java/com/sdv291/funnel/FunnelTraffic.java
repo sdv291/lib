@@ -10,7 +10,7 @@ public class FunnelTraffic extends FunnelTime {
 
   /**
    * @param bytesLimit the maximum number of bytes that can be transferred in a period
-   * @param periodSec  {@inheritDoc}
+   * @param periodSec  period in a seconds
    */
   public FunnelTraffic(long bytesLimit, int periodSec) {
     super(bytesLimit, periodSec);
