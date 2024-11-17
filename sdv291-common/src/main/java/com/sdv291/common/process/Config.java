@@ -5,7 +5,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class ProcessConfig {
+public class Config {
 
   private final int maxPackSize;
   private final int maxWorkerCount;
@@ -13,7 +13,7 @@ public class ProcessConfig {
   private final int overloadThreshold;
   private final ExecutorService executorService;
 
-  private ProcessConfig(Builder builder) {
+  private Config(Builder builder) {
     this.maxPackSize = builder.maxPackSize;
     this.maxWorkerCount = builder.maxWorkerCount;
     this.pollTimeoutMillis = builder.pollTimeoutMillis;
@@ -100,7 +100,7 @@ public class ProcessConfig {
       return new Builder();
     }
 
-    public ProcessConfig build() {
+    public Config build() {
       if (Objects.isNull(this.executorService)) {
         this.setExecutorService(
           Executors.newFixedThreadPool(
@@ -113,7 +113,7 @@ public class ProcessConfig {
           )
         );
       }
-      return new ProcessConfig(this);
+      return new Config(this);
     }
   }
 }

@@ -9,7 +9,7 @@ class ProcessesTest {
   @Test
   void baseProcess() throws InterruptedException {
     Process<Object> process = Processes.newProcess(
-      ProcessConfig.newBuilder().build(),
+      Config.newBuilder().build(),
       (items) -> assertFalse(items.isEmpty())
     );
     process.offer(new Object());

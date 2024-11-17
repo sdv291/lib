@@ -2,8 +2,10 @@ package com.sdv291.common.stats;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Alarm {
 
@@ -56,7 +58,7 @@ public class Alarm {
   }
 
   public Map<String, Object> getProperties() {
-    return properties;
+    return Objects.isNull(properties)? Collections.emptyMap() : properties;
   }
 
   public void setProperties(Map<String, Object> properties) {

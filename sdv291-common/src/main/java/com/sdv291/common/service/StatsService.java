@@ -1,21 +1,23 @@
 package com.sdv291.common.service;
 
 import com.sdv291.common.Holder;
-import com.sdv291.common.exception.CommonException;
 import com.sdv291.common.process.Process;
-import com.sdv291.common.process.ProcessConfig;
 import com.sdv291.common.process.Processes;
 import com.sdv291.common.stats.Alarm;
+import com.sdv291.common.stats.Criteria;
 import com.sdv291.common.stats.Language;
 import com.sdv291.common.stats.Level;
 import com.sdv291.common.stats.Locale;
 import com.sdv291.common.stats.Stats;
-import com.sdv291.common.stats.StatsConfig;
 import com.sdv291.common.util.ConverterUtils;
+import com.sdv291.common.util.StringUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,37 +28,29 @@ import java.util.concurrent.TimeUnit;
 
 public class StatsService {
 
-  static final String URL = "http://stats.sdv291.com/api/v1/stats";
-
-  protected final StatsConfig config;
-  private final Process<Holder<CommonException, Alarm>> process;
+  protected final com.sdv291.common.stats.Config config;
+  private final Process<Holder<Criteria, Alarm>> process;
   private final long ttlCache = TimeUnit.HOURS.toMillis(1);
   private final ConcurrentMap<String, Message> cacheMessages = new ConcurrentHashMap<>();
 
-  public StatsService(StatsConfig config) {
+  public StatsService(com.sdv291.common.stats.Config config) {
     this.config = config;
     this.process = Processes.newProcess(
-      ProcessConfig.newBuilder()
+      com.sdv291.common.process.Config.newBuilder()
         .setOverloadThreshold(5)
         .setMaxWorkerCount(3)
         .setMaxPackSize(1)
         .build(),
       holders -> {
-        Holder<CommonException, Alarm> holder = holders.get(0);
+        Holder<Criteria, Alarm> holder = holders.get(0);
         try {
-          CommonException ex = holder.getFilter();
+          Criteria criteria = holder.getFilter();
 
-          Map<String, Object> request = new HashMap<>();
-          request.put("stackTrace", Base64.getEncoder().encodeToString(ConverterUtils.toString(ex).getBytes()));
-          request.put("alarmCode", ex.getCode() + "." + ex.getId());
-          request.put("happened", System.currentTimeMillis());
-          request.put("projectId", config.getProjectId());
-          request.put("stackTraceFormat", "BASE64");
-          request.put("options", ex.getOptions());
-          request.put("source", ex.getSource());
-          request.put("stackTraceTypeId", 1); // 1 it's java stacktrace type
+          String url = this.getUrl(criteria);
+          Map<String, String> headers = this.getHeaders(criteria);
+          Map<String, Object> request = this.getRequest(criteria);
 
-          Stats stats = this.execute(URL, request);
+          Stats stats = this.execute(url, request, headers);
           if (Objects.nonNull(stats)) {
             Alarm alarm = stats.getAlarm();
             holder.successful(alarm);
@@ -72,19 +66,77 @@ public class StatsService {
     );
   }
 
-  protected Stats execute(String url, Map<String, Object> request) throws IOException {
+  private String getUrl(Criteria criteria) throws UnsupportedEncodingException {
+    Map<String, String> params = new HashMap<>();
+    if (criteria.isRegister() && Objects.nonNull(criteria.getError())) {
+      params.put("register", "true");
+    }
+    if (criteria.isProperties()) {
+      params.put("properties", "true");
+    }
+
+    String url = config.getUrl();
+    StringBuilder sb = new StringBuilder(url);
+    if (!params.isEmpty()) {
+      if (!url.endsWith("?")) {
+        sb.append('?');
+      }
+      for (Map.Entry<String, String> entry : params.entrySet()) {
+        sb.append(entry.getKey());
+        sb.append('=');
+        sb.append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.name()));
+        sb.append('&');
+      }
+      sb.setLength(sb.length() - 1);
+    }
+    return sb.toString();
+  }
+
+  private Map<String, String> getHeaders(Criteria criteria) {
+    Map<String, String> headers = new HashMap<>();
+    headers.put("Content-Type", "application/json");
+    headers.put("Accept", "application/json");
+    return headers;
+  }
+
+  private Map<String, Object> getRequest(Criteria criteria) {
+    Map<String, Object> request = new HashMap<>();
+    if (Objects.nonNull(criteria.getError())) {
+      request.put("stackTrace", Base64.getEncoder().encodeToString(ConverterUtils.toString(criteria.getError()).getBytes()));
+      request.put("stackTraceFormat", "BASE64");
+      request.put("stackTraceTypeId", 1); // 1 it's java stacktrace type
+
+      // todo maybe change it to
+      /* 'stackTrace':{
+           'type':1,
+           'format':'BASE64',
+           'value':'ENCODED_STACK_TRACE'
+       } */
+    }
+    if (StringUtils.notEmpty(criteria.getSource())) {
+      request.put("source", criteria.getSource());
+    }
+    request.put("alarmCode", StringUtils.isEmpty(criteria.getCode())? "default" : criteria.getCode());
+    request.put("happened", System.currentTimeMillis());
+    request.put("projectId", config.getProjectId());
+    request.put("options", criteria.getOptions());
+    return request;
+  }
+
+  protected Stats execute(String url,
+                          Map<String, Object> body,
+                          Map<String, String> headers) throws IOException {
     HttpURLConnection conn = null;
     try {
-      byte[] body = config.getObjectMapper().writeValueAsBytes(request);
-
       conn = (HttpURLConnection) URI.create(url).toURL().openConnection();
-      conn.setRequestProperty("Content-Type", "application/json");
-      conn.setRequestProperty("Accept", "application/json");
+      for (Map.Entry<String, String> entry : headers.entrySet()) {
+        conn.setRequestProperty(entry.getKey(), entry.getValue());
+      }
       conn.setInstanceFollowRedirects(false);
       conn.setRequestMethod("POST");
       conn.setUseCaches(false);
       conn.setDoOutput(true);
-      conn.getOutputStream().write(body);
+      conn.getOutputStream().write(config.getObjectMapper().writeValueAsBytes(body));
       return config.getObjectMapper().readValue(conn.getInputStream(), Stats.class);
     } finally {
       if (Objects.nonNull(conn)) {
@@ -93,9 +145,9 @@ public class StatsService {
     }
   }
 
-  public final Holder<CommonException, Alarm> async(CommonException ex) {
-    Holder<CommonException, Alarm> holder = new Holder<>(ex);
-    Alarm alarm = get(ex);
+  public final Holder<Criteria, Alarm> invoke(Criteria criteria) {
+    Holder<Criteria, Alarm> holder = new Holder<>(criteria);
+    Alarm alarm = this.get(criteria.getCode());
     if (Objects.nonNull(alarm)) {
       holder.successful(alarm);
     }
@@ -107,12 +159,8 @@ public class StatsService {
     return holder;
   }
 
-  public final Alarm get(CommonException ex) {
-    return get(String.join(".", ex.getCode(), String.valueOf(ex.getId())));
-  }
-
   public final Alarm get(String code) {
-    Message message = cacheMessages.get(code);
+    Message message = cacheMessages.get(code.toLowerCase());
     if (Objects.nonNull(message)) {
       return message.getAlarm();
     }

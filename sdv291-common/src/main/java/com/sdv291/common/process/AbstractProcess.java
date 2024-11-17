@@ -22,7 +22,7 @@ public abstract class AbstractProcess<T> implements Process<T> {
    * Determine if the worker can be destroyed at this time.
    */
   private volatile boolean allowWorkerDestroy;
-  private final ProcessConfig config;
+  private final Config config;
 
   /**
    * Overload state {@code true} if overload has occurred
@@ -38,7 +38,7 @@ public abstract class AbstractProcess<T> implements Process<T> {
    */
   private final AtomicInteger workerCount = new AtomicInteger(0);
 
-  public AbstractProcess(ProcessConfig config) {
+  public AbstractProcess(Config config) {
     this.config = config;
     this.queue = new LinkedBlockingQueue<>();
     this.worker = this.worker();

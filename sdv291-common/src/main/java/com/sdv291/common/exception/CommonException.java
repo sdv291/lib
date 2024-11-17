@@ -1,89 +1,33 @@
 package com.sdv291.common.exception;
 
-import com.sdv291.common.service.StatsService;
-import com.sdv291.common.stats.Alarm;
-import com.sdv291.common.stats.Language;
-import com.sdv291.common.stats.Level;
-import com.sdv291.common.stats.Locale;
 import com.sdv291.common.util.RegexUtils;
 import com.sdv291.common.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 
 public final class CommonException extends RuntimeException {
 
   private static final long serialVersionUID = -5223340198679348323L;
-  private static final String DEFAULT_CODE = "default";
-
-  private static StatsService STATS_SERVICE;
-
-  public static void setStatsService(StatsService statsService) {
-    STATS_SERVICE = statsService;
-  }
 
   private final Builder builder;
 
-  protected CommonException(Builder builder) {
-    super(builder.cause);
+  private CommonException(Builder builder) {
+    super(builder.message, builder.cause);
     this.builder = builder;
-
-    if (Objects.nonNull(STATS_SERVICE)) {
-      STATS_SERVICE.async(this);
-    }
   }
 
   public int getId() {
     return builder.id;
   }
 
-  public String getRequestId() {
-    return builder.requestId;
-  }
-
   public String getCode() {
-    return StringUtils.isEmpty(builder.code)? DEFAULT_CODE : builder.code;
-  }
-
-  public String getSource() {
-    return StringUtils.isEmpty(builder.source)? "undefined" : builder.source;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public String getMessage() {
-    return this.getMessage(Language.ENGLISH, Level.DEVELOPER);
-  }
-
-  public String getMessage(Language language, Level level) {
-    if (Objects.nonNull(STATS_SERVICE)) {
-      Alarm alarm = this.getAlarm();
-      if (Objects.nonNull(alarm)) {
-        Locale locale = STATS_SERVICE.getLocale(alarm, language, level);
-        String message = locale.getText();
-        for (Map.Entry<String, Object> entry : builder.options.entrySet()) {
-          message = message.replace("${" + entry.getKey() + "}", String.valueOf(entry.getValue()));
-        }
-        return message;
-      }
-    }
-    return builder.message;
+    return builder.code;
   }
 
   public Map<String, Object> getOptions() {
     return builder.options;
-  }
-
-  public Alarm getAlarm() {
-    Alarm alarm = STATS_SERVICE.get(this);
-    if (Objects.isNull(alarm)) {
-      alarm = STATS_SERVICE.get(DEFAULT_CODE);
-    }
-    return alarm;
   }
 
   public static CommonException cast(Throwable th) {
@@ -120,9 +64,7 @@ public final class CommonException extends RuntimeException {
   public static final class Builder {
 
     private int id;
-    private String requestId;
     private String code;
-    private String source;
     private String message;
     private Throwable cause;
     private final Map<String, Object> options = new HashMap<>();
@@ -135,18 +77,8 @@ public final class CommonException extends RuntimeException {
       return this;
     }
 
-    public CommonException.Builder setRequestId(String requestId) {
-      this.requestId = requestId;
-      return this;
-    }
-
     public CommonException.Builder setCode(String code) {
       this.code = code;
-      return this;
-    }
-
-    public CommonException.Builder setSource(String source) {
-      this.source = source;
       return this;
     }
 
@@ -197,9 +129,6 @@ public final class CommonException extends RuntimeException {
     }
 
     public CommonException build() {
-      if (StringUtils.isEmpty(requestId)) {
-        this.setRequestId(UUID.randomUUID().toString());
-      }
       return new CommonException(this);
     }
   }

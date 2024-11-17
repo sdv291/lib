@@ -10,8 +10,8 @@ class CommonExceptionTest {
   @Test
   void defaultException() {
     CommonException ex = CommonException.newBuilder().build();
-    assertEquals("default", ex.getCode());
     assertEquals(0, ex.getId());
     assertNull(ex.getMessage());
+    assertNull(ex.getCode());
   }
 }

@@ -25,7 +25,7 @@ public class Processes {
    *
    * @return the newly created process
    */
-  public static <E> Process<E> newProcess(ProcessConfig config, Consumer<List<E>> consumer) {
+  public static <E> Process<E> newProcess(Config config, Consumer<List<E>> consumer) {
     return new AbstractProcess<E>(config) {
 
       /**
