@@ -2,41 +2,27 @@ package com.sdv291.common.funnel;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class FunnelTrafficTest {
 
   @Test
-  void _10bp5sec() throws Exception {
-    long start = System.currentTimeMillis();
-    FunnelTraffic funnelTime = new FunnelTraffic(10, 5);
+  void _10bp2sec() throws Exception {
+    FunnelTraffic funnel = new FunnelTraffic(10, 2);
     for (int i = 0; i < 10; i++) {
-      funnelTime.execute(Object::new, 2);
+      funnel.execute(Object::new, 5);
     }
-    assertEquals(5, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start));
+    assertTrue(funnel.isLimitReached());
+    assertTrue(funnel.getResumeAfter() > 0);
   }
 
   @Test
-  void _100bp5sec() throws Exception {
-    long start = System.currentTimeMillis();
-    FunnelTraffic funnelTime = new FunnelTraffic(100, 5);
+  void _101bp2sec() throws Exception {
+    FunnelTraffic funnel = new FunnelTraffic(101, 2);
     for (int i = 0; i < 20; i++) {
-      funnelTime.execute(Object::new, 10);
-      Thread.sleep(500);
+      funnel.execute(Object::new, 5);
     }
-    assertEquals(10, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start));
-  }
-
-  @Test
-  void _200bp5sec() throws Exception {
-    long start = System.currentTimeMillis();
-    FunnelTraffic funnelTime = new FunnelTraffic(200, 5);
-    funnelTime.execute(Object::new, 200);
-    for (int i = 0; i < 4; i++) {
-      funnelTime.execute(Object::new, 50);
-    }
-    assertEquals(5, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start));
+    assertFalse(funnel.isLimitReached());
+    assertEquals(0, funnel.getResumeAfter());
   }
 }

@@ -104,7 +104,7 @@ public abstract class AbstractProcess<T> implements Process<T> {
    * {@inheritDoc}
    */
   @Override
-  public final boolean offer(T data, long timeout) throws InterruptedException {
+  public boolean offer(T data, long timeout) throws InterruptedException {
     if (Objects.isNull(data)) {
       throw new NullPointerException();
     }

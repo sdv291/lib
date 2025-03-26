@@ -4,16 +4,22 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
+/**
+ * Request rate limits help prevent overload and ensure
+ * optimal resource utilization by all users.
+ */
 public class FunnelTime {
 
-  private static final long RETRY_INTERVAL = 100L;
+  private static final long RETRY_INTERVAL = 1000L;
 
   private final long limit;
-  private final AtomicLong[] counts;
+  protected final AtomicLong[] counts;
   private volatile int currentSecond = 0;
+  private final AtomicBoolean limitReached = new AtomicBoolean(false);
 
   /**
    * @param limit     the maximum number in a period
@@ -28,21 +34,48 @@ public class FunnelTime {
     Executors.newScheduledThreadPool(1).scheduleAtFixedRate(() -> {
       this.currentSecond = (this.currentSecond + 1) % periodSec;
       this.counts[this.currentSecond].set(0L);
-    }, 1, 1, TimeUnit.SECONDS);
+      this.limitReached.set(Stream.of(this.counts).mapToLong(AtomicLong::get).sum() >= this.limit);
+    }, 1L, 1L, TimeUnit.SECONDS);
   }
 
   public <T> T execute(Callable<T> callable) throws Exception {
-    return execute0(callable, 1);
+    return execute(callable, 1L);
   }
 
-  protected <T> T execute0(Callable<T> callable, long limit) throws Exception {
+  public <T> T execute(Callable<T> callable, long quantity) throws Exception {
+    if (quantity < 0) {
+      quantity = 0;
+    }
     while (true) {
       long sum = Stream.of(this.counts).mapToLong(AtomicLong::get).sum();
-      if (Objects.equals(sum, 0L) || sum + limit <= this.limit) {
-        this.counts[this.currentSecond].addAndGet(limit);
+      this.limitReached.set(sum + quantity >= this.limit);
+      // checking eq 0 is mandatory since the quantity may be greater than the limit
+      if (Objects.equals(sum, 0L) || sum + quantity <= this.limit) {
+        this.counts[this.currentSecond].addAndGet(quantity);
         return callable.call();
       }
       Thread.sleep(RETRY_INTERVAL);
     }
+  }
+
+  public boolean isLimitReached() {
+    return this.limitReached.get();
+  }
+
+  public int getResumeAfter() {
+    long limit = 0L;
+    int retry = 0;
+    int sec = this.currentSecond;
+    while (retry < this.counts.length) {
+      limit += this.counts[sec--].get();
+      if (sec < 0) {
+        sec = this.counts.length - 1;
+      }
+      if (limit >= this.limit) {
+        break;
+      }
+      retry++;
+    }
+    return this.counts.length - retry;
   }
 }

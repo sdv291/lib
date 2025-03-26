@@ -41,7 +41,7 @@ public class FunnelTraffic extends FunnelTime {
     if (bytes > this.bytesLimit && isTooLarge()) {
       return null;
     }
-    return execute0(callable, bytes);
+    return super.execute(callable, bytes);
   }
 
   protected boolean isTooLarge() {

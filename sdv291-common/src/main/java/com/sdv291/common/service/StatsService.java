@@ -128,7 +128,8 @@ public class StatsService {
                           Map<String, String> headers) throws IOException {
     HttpURLConnection conn = null;
     try {
-      conn = (HttpURLConnection) URI.create(url).toURL().openConnection();
+      URI uri = URI.create(url);
+      conn = (HttpURLConnection) uri.toURL().openConnection();
       for (Map.Entry<String, String> entry : headers.entrySet()) {
         conn.setRequestProperty(entry.getKey(), entry.getValue());
       }
@@ -136,7 +137,15 @@ public class StatsService {
       conn.setRequestMethod("POST");
       conn.setUseCaches(false);
       conn.setDoOutput(true);
+      conn.setConnectTimeout(5000);
+      conn.setReadTimeout(5000);
+      conn.connect();
+
       conn.getOutputStream().write(config.getObjectMapper().writeValueAsBytes(body));
+      int responseCode = conn.getResponseCode();
+      if (!Objects.equals(HttpURLConnection.HTTP_OK, responseCode)) {
+        return null;
+      }
       return config.getObjectMapper().readValue(conn.getInputStream(), Stats.class);
     } finally {
       if (Objects.nonNull(conn)) {

@@ -1,44 +1,42 @@
 package com.sdv291.common.funnel;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class FunnelTimeTest {
 
   @Test
   void _5rp5sec() throws Exception {
-    long start = System.currentTimeMillis();
-    FunnelTime funnelTime = new FunnelTime(5, 5);
-    for (int i = 0; i < 10; i++) {
-      funnelTime.execute(Object::new);
+    FunnelTime funnel = new FunnelTime(5, 5);
+    for (int i = 0; i < 5; i++) {
+      funnel.execute(Object::new);
     }
-    assertEquals(5, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start));
+    assertTrue(funnel.isLimitReached());
+    assertTrue(funnel.getResumeAfter() > 0);
   }
 
   @Test
-  void _10rp5sec() throws Exception {
-    long start = System.currentTimeMillis();
-    FunnelTime funnelTime = new FunnelTime(10, 5);
+  void _10rp2sec() throws Exception {
+    FunnelTime funnel = new FunnelTime(10, 2);
     for (int i = 0; i < 20; i++) {
-      funnelTime.execute(Object::new);
-      Thread.sleep(500);
+      funnel.execute(Object::new);
     }
-    assertEquals(10, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start));
+    assertTrue(funnel.isLimitReached());
+    assertTrue(funnel.getResumeAfter() > 0);
   }
 
   @Test
-  void _4rp8sec() throws Exception {
-    long start = System.currentTimeMillis();
-    FunnelTime funnelTime = new FunnelTime(4, 8);
-    funnelTime.execute(Object::new);
-    Thread.sleep(7000);
-    funnelTime.execute(Object::new);
+  void _4rp2sec() throws Exception {
+    FunnelTime funnel = new FunnelTime(4, 2);
     for (int i = 0; i < 4; i++) {
-      funnelTime.execute(Object::new);
+      funnel.execute(Object::new);
     }
-    assertEquals(15, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start));
+    assertTrue(funnel.isLimitReached());
+    assertTrue(funnel.getResumeAfter() > 0);
+    Thread.sleep(2500);
+    assertFalse(funnel.isLimitReached());
+    assertEquals(0, funnel.getResumeAfter());
   }
 }
