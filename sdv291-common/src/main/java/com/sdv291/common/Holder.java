@@ -29,7 +29,7 @@ public class Holder<I, O> {
   }
 
   public boolean isError() {
-    return !isOk();
+    return !this.isOk();
   }
 
   public O getResult() throws Exception {

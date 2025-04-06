@@ -19,7 +19,7 @@ public class PoolProvider<E> {
     Provider<E> provider = this.pool.poll();
     try {
       if (Objects.isNull(provider)) {
-        provider = getProvider();
+        provider = this.getProvider();
       }
       return provider;
     } finally {

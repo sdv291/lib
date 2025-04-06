@@ -63,7 +63,7 @@ In my opinion, all exceptions should be at runtime. It helps to make your code s
 throw CommonException.build("Something went wrong");
 ```
 
-## FunnelExecutor
+## Funnel executor
 
 Do you need to limit concurrent interaction, then this is what are you needed.
 
@@ -78,7 +78,7 @@ for (int i = 0; i < 10; i++) {
 
 This is concurrent thread safe code for limit HTTP calls to 2 at time.
 
-## FunnelTime
+## Funnel by time
 
 Do you need to limit count of calls in a period of time, then this is what are you needed.
 
@@ -91,7 +91,7 @@ for (int i = 0; i < 20_000; i++) {
 
 This is concurrent thread safe code for limit count of calls to 10k in 1min.
 
-## FunnelTraffic
+## Funnel for traffic
 
 Do you need to limit traffic in a period of time, then this is what are you needed.
 
@@ -104,15 +104,33 @@ for (int i = 0; i < 20; i++) {
 
 This is concurrent thread safe code for limit traffic to 10MB in 1min.
 
-## Measure
+## The duration time of your code parts
 
-Do you need to measure interaction time, then this is what are you needed.
+Do you need to measure the duration of parts of your code, then this is what are you needed.
 
 ```
-Measure measure = new Measure("test");
+DurationService service = new DurationService();
+Duration duration = service.getDuration("test");
 for (int i = 0; i < 3; i++) {
-  measure.addInteractionTime(TimeUnit.SECONDS.toMillis(1));
+  long start = System.currentTimeMillis();
+  // do something eq REST call
+  duration.calcInteractionTime(start);
 }
-measure.getHeaders(); // Name      Total time(ms)      Average time(ms)    Exec count
-measure.getMeasure(); // test      3000                1000                3
+service.print(Logger.getLogger("my-app"));
 ```
+
+This is thread-safe code for measuring how long parts of your code take to execute.
+
+## Smart delay
+
+If you need to execute code with some delays, this is what you need.
+
+```
+SmartSleep sleep = new SmartSleep(10_000, true);
+sleep.apply();
+// some REST call
+sleep.apply();
+// some REST call
+```
+
+If you need to make REST calls, for example, not more than once every 10 seconds.
