@@ -100,6 +100,10 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <keyname>4B89FE967D1AF442</keyname>
+          <passphraseServerId>gpg.passphrase</passphraseServerId>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.sonatype.central</groupId>
